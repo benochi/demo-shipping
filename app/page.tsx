@@ -35,7 +35,7 @@ export default function Home() {
   const emptyAddr = { name: "", street1: "", city: "", state: "", zip: "", country: "US" }
   const defaultTo = {
     name: "Bilbo Baggins",
-    street1: "9400 Ralston rd",
+    street1: "7402 Ralston rd",
     city: "Arvada",
     state: "CO",
     zip: "80002",
@@ -46,14 +46,14 @@ export default function Home() {
   const [from, setFrom]     = useState<Address>(emptyAddr)
   const [to, setTo]         = useState<Address>(defaultTo)
   const [parcel, setParcel] = useState<Parcel>(defaultParcel)
-  const [reqJson, setReqJson] = useState("")
-  const [resJson, setResJson] = useState("")
-  const [rates, setRates]     = useState<Rate[]>([])
+  const [reqJson, setReqJson]   = useState("")
+  const [resJson, setResJson]   = useState("")
+  const [rates, setRates]       = useState<Rate[]>([])
+  const [selectedRateId, setSelectedRateId] = useState<string | null>(null)
 
   async function getRates() {
     const body = { from, to, parcel }
     setReqJson(JSON.stringify(body, null, 2))
-
     const res = await fetch("/api/shipping/getRates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,6 +62,7 @@ export default function Home() {
     const data: Rate[] = await res.json()
     setResJson(JSON.stringify(data, null, 2))
     setRates(data)
+    setSelectedRateId(null)
   }
 
   return (
@@ -130,50 +131,58 @@ export default function Home() {
 
       {rates.length > 0 && (
         <ul className="space-y-4 mt-6">
-          {rates.map((rate) => (
-            <li key={rate.object_id} className="flex items-start p-4 border rounded-lg">
-            <Image
-              src={rate.provider_image_75}
-              alt={rate.provider}
-              width={32}
-              height={32}
-              className="mr-4 flex-shrink-0"
-            />
-            <div className="flex-1">
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <h2 className="text-md text-gray-100">{rate.provider}</h2>
-                  <h3 className="font-semibold">{rate.servicelevel.name}</h3>
+          {rates.map(rate => {
+            const isSelected = rate.object_id === selectedRateId
+            return (
+              <li
+                key={rate.object_id}
+                onClick={() => setSelectedRateId(rate.object_id)}
+                className={`flex items-start p-4 border rounded-lg text-grey-100 cursor-pointer ${
+                  isSelected ? "border-blue-500 bg-blue-50 text-black" : ""
+                }`}
+              >
+                <Image
+                  src={rate.provider_image_75}
+                  alt={rate.provider}
+                  width={32}
+                  height={32}
+                  className="mr-4 flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <h2 className="text-md ">{rate.provider}</h2>
+                      <h3 className="font-semibold">{rate.servicelevel.name}</h3>
+                    </div>
+                    <span className="text-lg font-bold">
+                      ${parseFloat(rate.amount_local).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-sm mt-1">
+                    {rate.estimated_days
+                      ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
+                      : rate.duration_terms}
+                  </p>
+                  <div className="mt-2 space-x-1">
+                    {rate.attributes.map(attr => (
+                      <span
+                        key={attr}
+                        className={`px-2 py-0.5 text-xs font-medium rounded ${
+                          attr === 'FASTEST'
+                            ? 'bg-blue-100 text-blue-800'
+                            : attr === 'CHEAPEST'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {attr}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <span className="text-lg font-bold">
-                  ${parseFloat(rate.amount_local).toFixed(2)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-300 mt-1">
-                {rate.estimated_days
-                  ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
-                  : rate.duration_terms}
-              </p>
-              
-              <div className="mt-2 space-x-1">
-                {rate.attributes.map((attr) => (
-                  <span
-                    key={attr}
-                    className={`px-2 py-0.5 text-xs font-medium rounded ${
-                      attr === 'FASTEST'
-                        ? 'bg-blue-100 text-blue-800'
-                        : attr === 'CHEAPEST'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {attr}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
     </main>
