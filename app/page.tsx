@@ -24,6 +24,7 @@ type Rate = {
   amount_local: string
   currency_local: string
   provider_image_75: string
+  provider: string
   servicelevel: { name: string }
   estimated_days?: number
   duration_terms: string
@@ -131,43 +132,47 @@ export default function Home() {
         <ul className="space-y-4 mt-6">
           {rates.map((rate) => (
             <li key={rate.object_id} className="flex items-start p-4 border rounded-lg">
-              <Image
-                src={rate.provider_image_75}
-                alt={rate.servicelevel.name}
-                width={32}
-                height={32}
-                className="mr-4 flex-shrink-0"
-              />
-              <div className="flex-1">
-                <div className="flex items-baseline justify-between">
+            <Image
+              src={rate.provider_image_75}
+              alt={rate.provider}
+              width={32}
+              height={32}
+              className="mr-4 flex-shrink-0"
+            />
+            <div className="flex-1">
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <h2 className="text-md text-gray-100">{rate.provider}</h2>
                   <h3 className="font-semibold">{rate.servicelevel.name}</h3>
-                  <span className="text-lg font-bold">
-                    ${parseFloat(rate.amount_local).toFixed(2)}
-                  </span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {rate.estimated_days
-                    ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
-                    : rate.duration_terms}
-                </p>
-                <div className="mt-2 space-x-1">
-                  {rate.attributes.map((attr) => (
-                    <span
-                      key={attr}
-                      className={`px-2 py-0.5 text-xs font-medium rounded ${
-                        attr === 'FASTEST'
-                          ? 'bg-blue-100 text-blue-800'
-                          : attr === 'CHEAPEST'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {attr}
-                    </span>
-                  ))}
-                </div>
+                <span className="text-lg font-bold">
+                  ${parseFloat(rate.amount_local).toFixed(2)}
+                </span>
               </div>
-            </li>
+              <p className="text-sm text-gray-300 mt-1">
+                {rate.estimated_days
+                  ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
+                  : rate.duration_terms}
+              </p>
+              
+              <div className="mt-2 space-x-1">
+                {rate.attributes.map((attr) => (
+                  <span
+                    key={attr}
+                    className={`px-2 py-0.5 text-xs font-medium rounded ${
+                      attr === 'FASTEST'
+                        ? 'bg-blue-100 text-blue-800'
+                        : attr === 'CHEAPEST'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {attr}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </li>
           ))}
         </ul>
       )}
