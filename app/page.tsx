@@ -17,16 +17,27 @@ type Parcel = {
   weight: string
   mass_unit: string
 }
+type Rate = {
+  object_id: string
+  amount_local: string
+  currency_local: string
+  provider_image_75: string
+  servicelevel: { name: string }
+  estimated_days?: number
+  duration_terms: string
+  attributes: string[]
+}
 
 export default function Home() {
   const emptyAddr = { name:"", street1:"", city:"", state:"", zip:"", country:"US" }
   const emptyParcel = { length:"", width:"", height:"", distance_unit:"in", weight:"", mass_unit:"lb" }
 
   const [from, setFrom] = useState<Address>(emptyAddr)
-  const [to,   setTo]   = useState<Address>(emptyAddr)
+  const [to, setTo]     = useState<Address>(emptyAddr)
   const [parcel, setParcel] = useState<Parcel>(emptyParcel)
   const [reqJson, setReqJson] = useState("")
   const [resJson, setResJson] = useState("")
+  const [rates, setRates] = useState<Rate[]>([])
 
   async function getRates() {
     const body = { from, to, parcel }
@@ -36,8 +47,9 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     })
-    const data = await res.json()
+    const data: Rate[] = await res.json()
     setResJson(JSON.stringify(data, null, 2))
+    setRates(data)
   }
 
   return (
@@ -100,11 +112,59 @@ export default function Home() {
         </div>
         <div>
           <h2 className="font-semibold">Response JSON</h2>
-          <pre className="bg-gray-100 text-black  p-2 h-40 overflow-auto">
+          <pre className="bg-gray-100 text-black p-2 h-40 overflow-auto">
             {resJson}
           </pre>
         </div>
       </div>
+
+      {rates.length > 0 && (
+        <ul className="space-y-4 mt-6">
+          {rates.map((rate) => (
+            <li
+              key={rate.object_id}
+              className="flex items-center p-4 border rounded-lg"
+            >
+              <img
+                src={rate.provider_image_75}
+                alt={rate.servicelevel.name}
+                className="w-8 h-8 mr-4"
+              />
+              <div className="flex-1">
+                <div className="flex items-baseline justify-between">
+                  <h3 className="font-semibold">
+                    {rate.servicelevel.name}
+                  </h3>
+                  <span className="text-lg font-bold">
+                    ${parseFloat(rate.amount_local).toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {rate.estimated_days
+                    ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
+                    : rate.duration_terms}
+                </p>
+              </div>
+              <div className="space-x-1">
+                {rate.attributes.map((attr) => (
+                  <span
+                    key={attr}
+                    className={`px-2 py-0.5 text-xs font-medium rounded ${
+                      attr === 'FASTEST'
+                        ? 'bg-blue-100 text-blue-800'
+                        : attr === 'CHEAPEST'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {attr}
+                  </span>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   )
 }
