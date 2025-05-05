@@ -94,13 +94,13 @@ export default function Home() {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <h2 className="font-semibold">Request JSON</h2>
-          <pre className="bg-gray-100 p-2 h-40 overflow-auto">
+          <pre className="bg-gray-100 text-black p-2 h-40 overflow-auto">
             {reqJson}
           </pre>
         </div>
         <div>
           <h2 className="font-semibold">Response JSON</h2>
-          <pre className="bg-gray-100 p-2 h-40 overflow-auto">
+          <pre className="bg-gray-100 text-black  p-2 h-40 overflow-auto">
             {resJson}
           </pre>
         </div>
