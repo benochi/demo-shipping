@@ -66,7 +66,7 @@ export default function Home() {
 
   return (
     <main className="p-6">
-      <h1 className="text-xl font-bold mb-4">Shipping Rate Demo</h1>
+      <h1 className="text-xl font-bold mb-4">Shippo Test</h1>
 
       <form onSubmit={e => { e.preventDefault(); getRates() }} className="space-y-4 mb-6">
         <fieldset className="space-y-2">
