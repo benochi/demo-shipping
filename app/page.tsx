@@ -1,5 +1,7 @@
 "use client"
+
 import { useState } from "react"
+import Image from "next/image"
 
 type Address = {
   name: string
@@ -29,19 +31,28 @@ type Rate = {
 }
 
 export default function Home() {
-  const emptyAddr = { name:"", street1:"", city:"", state:"", zip:"", country:"US" }
-  const emptyParcel = { length:"", width:"", height:"", distance_unit:"in", weight:"", mass_unit:"lb" }
+  const emptyAddr = { name: "", street1: "", city: "", state: "", zip: "", country: "US" }
+  const defaultTo = {
+    name: "Bilbo Baggins",
+    street1: "9400 Ralston rd",
+    city: "Arvada",
+    state: "CO",
+    zip: "80002",
+    country: "US",
+  }
+  const defaultParcel = { length: "12", width: "12", height: "5", distance_unit: "in", weight: "5", mass_unit: "lb" }
 
-  const [from, setFrom] = useState<Address>(emptyAddr)
-  const [to, setTo]     = useState<Address>(emptyAddr)
-  const [parcel, setParcel] = useState<Parcel>(emptyParcel)
+  const [from, setFrom]     = useState<Address>(emptyAddr)
+  const [to, setTo]         = useState<Address>(defaultTo)
+  const [parcel, setParcel] = useState<Parcel>(defaultParcel)
   const [reqJson, setReqJson] = useState("")
   const [resJson, setResJson] = useState("")
-  const [rates, setRates] = useState<Rate[]>([])
+  const [rates, setRates]     = useState<Rate[]>([])
 
   async function getRates() {
     const body = { from, to, parcel }
     setReqJson(JSON.stringify(body, null, 2))
+
     const res = await fetch("/api/shipping/getRates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -55,10 +66,8 @@ export default function Home() {
   return (
     <main className="p-6">
       <h1 className="text-xl font-bold mb-4">Shipping Rate Demo</h1>
-      <form
-        onSubmit={e => { e.preventDefault(); getRates() }}
-        className="space-y-4 mb-6"
-      >
+
+      <form onSubmit={e => { e.preventDefault(); getRates() }} className="space-y-4 mb-6">
         <fieldset className="space-y-2">
           <legend className="font-semibold">From Address</legend>
           {Object.entries(from).map(([key, val]) => (
@@ -71,6 +80,7 @@ export default function Home() {
             />
           ))}
         </fieldset>
+
         <fieldset className="space-y-2">
           <legend className="font-semibold">To Address</legend>
           {Object.entries(to).map(([key, val]) => (
@@ -83,6 +93,7 @@ export default function Home() {
             />
           ))}
         </fieldset>
+
         <fieldset className="space-y-2">
           <legend className="font-semibold">Parcel</legend>
           {Object.entries(parcel).map(([key, val]) => (
@@ -95,10 +106,8 @@ export default function Home() {
             />
           ))}
         </fieldset>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Get Rates
         </button>
       </form>
@@ -121,20 +130,17 @@ export default function Home() {
       {rates.length > 0 && (
         <ul className="space-y-4 mt-6">
           {rates.map((rate) => (
-            <li
-              key={rate.object_id}
-              className="flex items-center p-4 border rounded-lg"
-            >
-              <img
+            <li key={rate.object_id} className="flex items-start p-4 border rounded-lg">
+              <Image
                 src={rate.provider_image_75}
                 alt={rate.servicelevel.name}
-                className="w-8 h-8 mr-4"
+                width={32}
+                height={32}
+                className="mr-4 flex-shrink-0"
               />
               <div className="flex-1">
                 <div className="flex items-baseline justify-between">
-                  <h3 className="font-semibold">
-                    {rate.servicelevel.name}
-                  </h3>
+                  <h3 className="font-semibold">{rate.servicelevel.name}</h3>
                   <span className="text-lg font-bold">
                     ${parseFloat(rate.amount_local).toFixed(2)}
                   </span>
@@ -144,22 +150,22 @@ export default function Home() {
                     ? `Est. ${rate.estimated_days} day${rate.estimated_days > 1 ? 's' : ''}`
                     : rate.duration_terms}
                 </p>
-              </div>
-              <div className="space-x-1">
-                {rate.attributes.map((attr) => (
-                  <span
-                    key={attr}
-                    className={`px-2 py-0.5 text-xs font-medium rounded ${
-                      attr === 'FASTEST'
-                        ? 'bg-blue-100 text-blue-800'
-                        : attr === 'CHEAPEST'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {attr}
-                  </span>
-                ))}
+                <div className="mt-2 space-x-1">
+                  {rate.attributes.map((attr) => (
+                    <span
+                      key={attr}
+                      className={`px-2 py-0.5 text-xs font-medium rounded ${
+                        attr === 'FASTEST'
+                          ? 'bg-blue-100 text-blue-800'
+                          : attr === 'CHEAPEST'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {attr}
+                    </span>
+                  ))}
+                </div>
               </div>
             </li>
           ))}
